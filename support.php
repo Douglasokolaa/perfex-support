@@ -25,13 +25,36 @@ function view_envato_item_data($ticketid)
     $CI->load->library('support/envato');
     $data = [];
     $purchaseCode = get_custom_field_value($ticketid, 'tickets_purchase_code', 'tickets');
+    $crmWebsite = get_custom_field_value($ticketid, 'tickets_installation', 'tickets');
     $pCodeData = $CI->envato->validate_purchase($purchaseCode);
+    $data['website'] = $crmWebsite;
 
     if ($pCodeData['successful']) {
         $data['item'] = $pCodeData['data'];
         echo $CI->load->view('support/item', $data);
     } else {
         echo '<div class="alert alert-danger">' . $pCodeData['message'] . '</div><hr>';
+    }
+}
+
+function envato_date_label($timestamp)
+{
+    $timestamp = _dt($timestamp);
+    $today = new DateTime(); // This object represents current date/time
+    $today->setTime(0, 0, 0); // reset time part, to prevent partial comparison
+
+    $match_date = new DateTime($timestamp);
+    $match_date->setTime(0, 0, 0); // reset time part, to prevent partial comparison
+
+    $diff = $today->diff($match_date);
+    $diffDays = (int)$diff->format("%R%a"); // Extract days count in interval
+
+    if ($diffDays == 0) {
+        return 'warning';
+    } else if ($diffDays > 0 ) {
+        return 'success';
+    } else {
+        return 'danger';
     }
 }
 
